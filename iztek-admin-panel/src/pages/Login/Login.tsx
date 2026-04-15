@@ -8,7 +8,7 @@ export default function Login() {
   const onFinish = async (values: { emailorIdentityNumber: string; password: string }) => {
     setLoading(true);
     try {
-      const response = await api.post('/users/login', values);
+      const response = await api.post('/api/v1/users/login', values);
       console.log('Full response:', response.data);
 
       if (response.data.isSuccessful) {
