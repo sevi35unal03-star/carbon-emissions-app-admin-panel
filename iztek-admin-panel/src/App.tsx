@@ -1,8 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login/Login';
-import Dashboard from './pages/Dashboard/Dashboard.tsx';
-import FaydaliBilgiler from './pages/FaydalıBilgiler/FaydalıBilgiler.tsx';
-import KarbonAyakIzi from './pages/KarbonAyakIzi/KarbonAyakIzi.tsx';
+import AdminLayout from './layouts/AdminLayout';
+import FaydaliBilgiler from './pages/FaydalıBilgiler/FaydalıBilgiler';
+import KarbonAyakIzi from './pages/KarbonAyakIzi/KarbonAyakIzi';
+import DailyAnswers from './pages/DailyAnswers/DailyAnswers';
+import AuditLogs from './pages/AuditLogs/AuditLogs';
+import ActivityQuestions from './pages/ActivityQuestions/ActivityQuestions';
+import Polls from './pages/Polls/Polls';
+import Dashboard from './pages/Dashboard/Dashboard';
 
 const PrivateRoute = ({ children }: { children: React.ReactElement }) => {
   const token = localStorage.getItem('token');
@@ -16,18 +21,24 @@ export default function App() {
         <Route path="/login" element={<Login />} />
 
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <AdminLayout />
             </PrivateRoute>
           }
         >
-          <Route path="faydali-bilgiler" element={<FaydaliBilgiler />} />
-          <Route path="karbon-ayak-izi" element={<KarbonAyakIzi />} />
+          <Route index element={<Navigate to="/dashboard" replace /> } />
+          <Route path="useful-informations" element={<FaydaliBilgiler />} />
+          <Route path="carbon-footprint" element={<KarbonAyakIzi />} />
+          <Route path="daily-answers" element={<DailyAnswers />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
+          <Route path="activity-questions" element={<ActivityQuestions />} />
+          <Route path="polls" element={<Polls />} />
+           <Route path="dashboard" element={<Dashboard />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
