@@ -34,7 +34,7 @@ export default function App() {
           <Route path="carbon-footprint" element={<KarbonAyakIzi />} />
           <Route path="daily-answers" element={<DailyAnswers />} />
           <Route path="audit-logs" element={<AuditLogs />} />
-         <Route path="definitions" element={<Definitions />} />
+           <Route path="definitions" element={<Definitions />} />
           <Route path="activity-questions" element={<ActivityQuestions />} />
           <Route path="polls" element={<Polls />} />
            <Route path="dashboard" element={<Dashboard />} />

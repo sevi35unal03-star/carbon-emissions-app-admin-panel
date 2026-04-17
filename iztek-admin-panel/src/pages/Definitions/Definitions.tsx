@@ -194,7 +194,7 @@ export default function Definitions() {
       onOk: async () => {
         try {
           await api.delete(
-            `/goals/global/${item.id}?month=${item.month}&year=${item.year}`
+            `/api/v1/goals/global/${item.id}?month=${item.month}&year=${item.year}`
           );
           setGoals(prev => prev.filter(g => g.id !== item.id));
           message.success("Silindi");
