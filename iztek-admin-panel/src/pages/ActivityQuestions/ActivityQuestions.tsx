@@ -1,5 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Table, Card, Button, Space, Modal, Form, Input, DatePicker, InputNumber, Popconfirm, message } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Table, Card, Button, Space, Modal, Form, Input,
+  DatePicker, InputNumber, Popconfirm, message, Select
+} from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import api from '../../services/api';
 import dayjs, { Dayjs } from 'dayjs';
@@ -19,6 +22,7 @@ interface ActivityQuestion {
   endDate: string;
   scheduledTime: string;
   options: ActivityOption[];
+  children?: ActivityQuestion[];
 }
 
 interface ActivityQuestionForm {
@@ -35,6 +39,35 @@ export default function ActivityQuestions() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form] = Form.useForm<ActivityQuestionForm>();
+
+  // 🔥 TREE BUILDER
+  const buildTree = (questions: ActivityQuestion[]) => {
+    const map = new Map<string, ActivityQuestion & { children: ActivityQuestion[] }>();
+
+    questions.forEach(q => {
+      map.set(q.id, { ...q, children: [] });
+    });
+
+    questions.forEach(q => {
+      q.options.forEach(opt => {
+        if (opt.nextQuestionId && map.has(opt.nextQuestionId)) {
+          map.get(q.id)!.children.push(map.get(opt.nextQuestionId)!);
+        }
+      });
+    });
+
+    return Array.from(map.values());
+  };
+
+  const treeData = useMemo(() => buildTree(questions), [questions]);
+
+  // 🔥 Dropdown için
+  const questionOptions = useMemo(() => (
+    questions.map(q => ({
+      label: q.text,
+      value: q.id
+    }))
+  ), [questions]);
 
   const fetchQuestions = async () => {
     setLoading(true);
@@ -87,6 +120,7 @@ export default function ActivityQuestions() {
 
   const openModal = (record?: ActivityQuestion) => {
     setEditingId(record?.id ?? null);
+
     if (record) {
       form.setFieldsValue({
         text: record.text,
@@ -98,6 +132,7 @@ export default function ActivityQuestions() {
     } else {
       form.resetFields();
     }
+
     setIsModalOpen(true);
   };
 
@@ -105,11 +140,17 @@ export default function ActivityQuestions() {
     { title: 'Sıra', dataIndex: 'displayOrder', width: 70 },
     { title: 'Soru Metni', dataIndex: 'text' },
     {
-      title: 'Tarih Aralığı',
+      title: 'Tarih',
       render: (_: unknown, r: ActivityQuestion) =>
-        `${dayjs(r.startDate).format('DD.MM.YYYY')} - ${dayjs(r.endDate).format('DD.MM.YYYY')}`,
+        `${dayjs(r.startDate).format('DD.MM')} - ${dayjs(r.endDate).format('DD.MM')}`,
     },
-    { title: 'Bildirim Saati', dataIndex: 'scheduledTime' },
+    {
+      title: 'Options',
+      render: (_: unknown, r: ActivityQuestion) =>
+        r.options.map(o =>
+          `${o.text} → ${o.nextQuestionId ? 'Bağlı' : 'Son'}`
+        ).join(' | ')
+    },
     {
       title: 'İşlemler',
       render: (_: unknown, record: ActivityQuestion) => (
@@ -118,8 +159,6 @@ export default function ActivityQuestions() {
           <Popconfirm
             title="Silmek istediğinize emin misiniz?"
             onConfirm={() => handleDelete(record.id)}
-            okText="Sil"
-            cancelText="İptal"
           >
             <Button icon={<DeleteOutlined />} danger />
           </Popconfirm>
@@ -130,68 +169,74 @@ export default function ActivityQuestions() {
 
   return (
     <Card
-      title="Aktivite Soruları"
+      title="Aktivite Soruları (Tree)"
       extra={
         <Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>
           Yeni Soru
         </Button>
       }
     >
-      <Table dataSource={questions} columns={columns} rowKey="id" loading={loading} />
+      <Table
+        dataSource={treeData}
+        columns={columns}
+        rowKey="id"
+        loading={loading}
+        pagination={false}
+      />
 
       <Modal
-        title={editingId ? 'Soruyu Düzenle' : 'Yeni Soru Ekle'}
+        title={editingId ? 'Düzenle' : 'Yeni Soru'}
         open={isModalOpen}
         onCancel={() => { setIsModalOpen(false); form.resetFields(); }}
         onOk={() => form.submit()}
-        width={700}
-        okText={editingId ? 'Güncelle' : 'Oluştur'}
-        cancelText="İptal"
+        width={800}
       >
         <Form form={form} layout="vertical" onFinish={handleSave}>
-          <Form.Item name="text" label="Soru Metni" rules={[{ required: true, message: 'Soru metni zorunludur.' }]}>
-            <Input.TextArea rows={2} />
+          <Form.Item name="text" label="Soru">
+            <Input.TextArea />
           </Form.Item>
 
-          <Space size="large">
-            <Form.Item name="displayOrder" label="Görüntüleme Sırası" initialValue={1}>
+          <Space>
+            <Form.Item name="displayOrder" label="Sıra">
               <InputNumber min={1} />
             </Form.Item>
-            <Form.Item name="dateRange" label="Yayın Aralığı" rules={[{ required: true, message: 'Tarih aralığı zorunludur.' }]}>
-              <DatePicker.RangePicker format="DD.MM.YYYY" />
+
+            <Form.Item name="dateRange" label="Tarih">
+              <DatePicker.RangePicker />
             </Form.Item>
-            <Form.Item name="scheduledTime" label="Bildirim Saati" rules={[{ required: true, message: 'Bildirim saati zorunludur.' }]}>
-              <DatePicker picker="time" format="HH:mm" />
+
+            <Form.Item name="scheduledTime" label="Saat">
+              <DatePicker picker="time" />
             </Form.Item>
           </Space>
 
-          <Form.List name="options" initialValue={[{ text: '', carbonValue: 0 }]}>
+          <Form.List name="options">
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} style={{ display: 'flex', marginBottom: 8 }} align="baseline">
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'text']}
-                      label="Seçenek Metni"
-                      rules={[{ required: true, message: 'Seçenek metni zorunludur.' }]}
-                    >
-                      <Input placeholder="Örn: Evet" />
+                  <Space key={key} align="baseline">
+                    <Form.Item {...restField} name={[name, 'text']} label="Metin">
+                      <Input />
                     </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'carbonValue']}
-                      label="Karbon Değeri"
-                    >
+
+                    <Form.Item {...restField} name={[name, 'carbonValue']} label="CO2">
                       <InputNumber />
                     </Form.Item>
-                    {fields.length > 1 && (
-                      <Button type="link" danger onClick={() => remove(name)}>Sil</Button>
-                    )}
+
+                    <Form.Item {...restField} name={[name, 'nextQuestionId']} label="Sonraki">
+                      <Select
+                        allowClear
+                        options={questionOptions}
+                        placeholder="Bağla"
+                      />
+                    </Form.Item>
+
+                    <Button danger onClick={() => remove(name)}>Sil</Button>
                   </Space>
                 ))}
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                  Seçenek Ekle
+
+                <Button onClick={() => add()} block icon={<PlusOutlined />}>
+                  Seçenek ekle
                 </Button>
               </>
             )}
