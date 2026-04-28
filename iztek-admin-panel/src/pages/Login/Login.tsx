@@ -5,6 +5,15 @@ import api from '../../services/api';
 
 type ForgotStep = 'phone' | 'otp' | 'newPassword';
 
+function getRoleFromToken(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || null;
+  } catch {
+    return null;
+  }
+}
+
 export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,7 +31,13 @@ export default function Login() {
     try {
       const response = await api.post('/users/login', values);
       if (response.data.isSuccessful) {
-        localStorage.setItem('token', response.data.data.accessToken);
+        const token = response.data.data.accessToken;
+        const role = getRoleFromToken(token);
+        if (role !== 'Admin') {
+          message.error('Bu panele erişim yetkiniz bulunmamaktadır.');
+          return;
+        }
+        localStorage.setItem('token', token);
         navigate('/');
       } else {
         message.error(response.data.errors?.[0] || 'Giriş başarısız.');
