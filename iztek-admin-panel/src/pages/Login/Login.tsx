@@ -9,7 +9,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Forgot password state
   const [forgotVisible, setForgotVisible] = useState(false);
   const [forgotStep, setForgotStep] = useState<ForgotStep>('phone');
   const [forgotLoading, setForgotLoading] = useState(false);
@@ -150,7 +149,7 @@ export default function Login() {
         open={forgotVisible}
         onCancel={() => setForgotVisible(false)}
         footer={null}
-      destroyOnHidden 
+        destroyOnHidden
       >
         {forgotStep === 'phone' && (
           <div>
