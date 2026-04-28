@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Card, Input, Button, List, Modal, message } from "antd";
 import api from "../../services/api";
@@ -194,7 +193,7 @@ export default function Definitions() {
       onOk: async () => {
         try {
           await api.delete(
-            `/goals/global/${item.id}?month=${item.month}&year=${item.year}`
+            `/api/v1/goals/global/${item.id}?month=${item.month}&year=${item.year}`
           );
           setGoals(prev => prev.filter(g => g.id !== item.id));
           message.success("Silindi");
@@ -377,4 +376,3 @@ export default function Definitions() {
     </>
   );
 }
-
