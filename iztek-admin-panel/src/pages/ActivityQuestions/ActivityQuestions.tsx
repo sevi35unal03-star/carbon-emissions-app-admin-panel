@@ -41,23 +41,28 @@ export default function ActivityQuestions() {
   const [form] = Form.useForm<ActivityQuestionForm>();
 
   // 🔥 TREE BUILDER
-  const buildTree = (questions: ActivityQuestion[]) => {
-    const map = new Map<string, ActivityQuestion & { children: ActivityQuestion[] }>();
+const buildTree = (questions: ActivityQuestion[]) => {
+  const safe = questions.map(q => ({
+    ...q,
+    options: q.options ?? []
+  }));
 
-    questions.forEach(q => {
-      map.set(q.id, { ...q, children: [] });
+  const map = new Map();
+
+  safe.forEach(q => {
+    map.set(q.id, { ...q, children: [] });
+  });
+
+  safe.forEach(q => {
+    q.options.forEach(opt => {
+      if (opt.nextQuestionId && map.has(opt.nextQuestionId)) {
+        map.get(q.id).children.push(map.get(opt.nextQuestionId));
+      }
     });
+  });
 
-    questions.forEach(q => {
-      q.options.forEach(opt => {
-        if (opt.nextQuestionId && map.has(opt.nextQuestionId)) {
-          map.get(q.id)!.children.push(map.get(opt.nextQuestionId)!);
-        }
-      });
-    });
-
-    return Array.from(map.values());
-  };
+  return Array.from(map.values());
+};
 
   const treeData = useMemo(() => buildTree(questions), [questions]);
 
@@ -85,8 +90,8 @@ export default function ActivityQuestions() {
     const payload = {
       text: values.text,
       displayOrder: values.displayOrder,
-      startDate: values.dateRange[0].format('YYYY-MM-DD'),
-      endDate: values.dateRange[1].format('YYYY-MM-DD'),
+      startDate: values.dateRange[0].toISOString(),
+      endDate: values.dateRange[1].toISOString(),
       scheduledTime: values.scheduledTime.format('HH:mm:ss'),
       notificationTime: values.scheduledTime.format('HH:mm:ss'),
       options: values.options,

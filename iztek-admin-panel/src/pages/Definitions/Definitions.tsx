@@ -179,7 +179,7 @@ export default function Definitions() {
       setOpen(false);
       setSelectedId(null);
       setForm({ month: new Date().getMonth() + 1, year: selectedYear, targetTreeCount: 0 });
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg = err?.response?.data?.detail ?? err?.response?.data?.title;
       message.error(msg || "Hata oluştu");
     }
