@@ -1,6 +1,6 @@
 # carbon-emissions-app-admin-panel
 
-> A short, clear sentence describing what this project does.
+> It was written to enable adminstration for the Carbon Emissions project.
 
 ---
 
