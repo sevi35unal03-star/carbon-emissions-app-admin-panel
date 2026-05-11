@@ -1,17 +1,17 @@
-# ⚡ Project Name
+# carbon-emissions-app-admin-panel
 
 > A short, clear sentence describing what this project does.
 
 ---
 
-## 🚀 Tech Stack
+##  Tech Stack
 
 - [React](https://react.dev/) — UI library
 - [Vite](https://vitejs.dev/) — Fast dev environment and bundler
 
 ---
 
-## 📦 Installation
+## Installation
 
 Clone the repo and install dependencies:
 
@@ -23,7 +23,7 @@ npm install
 
 ---
 
-## 🧑‍💻 Development
+##  Development
 
 Start the development server:
 
@@ -35,7 +35,7 @@ Open in browser: [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 🏗️ Production Build
+##  Production Build
 
 ```bash
 npm run build
@@ -51,7 +51,7 @@ npx vite preview
 
 ---
 
-## 📁 Folder Structure
+##  Folder Structure
 
 ```
 ├── public/          # Static assets
@@ -68,7 +68,7 @@ npx vite preview
 
 ---
 
-## 🌍 Environment Variables
+##  Environment Variables
 
 Create a `.env` file in the project root:
 
@@ -80,6 +80,6 @@ VITE_API_URL=https://api.example.com
 
 ---
 
-## 📜 License
+##  License
 
 [MIT](./LICENSE)
